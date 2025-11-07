@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment (exclude venv folders but not project code)
+bin/
+include/
+lib/
+pyvenv.cfg
+lib64
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+/tmp/
+
+# Test coverage
+.coverage
+htmlcov/
+
+# Docker
+.dockerignore
+
+# Temporary files
+*.tmp
+*.bak

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(chmod:*)",
+      "Bash(PYTHONPATH=. python3:*)",
+      "Bash(data/tmp_demo/hello.txt)",
+      "Bash(data/secret_demo/hidden.txt)",
+      "Bash(cat:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

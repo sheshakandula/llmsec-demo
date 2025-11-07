@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: llmsec-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount frontend for live updates during demo
+      - ./frontend:/app/frontend:ro
+      # Mount data directories (read-only for safety)
+      - ./data:/app/data:ro
+    environment:
+      - PYTHONPATH=/app
+      - API_PORT=8000
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+    # ⚠️ SAFETY: network_mode=none disables all network access
+    # This prevents accidental external API calls during the demo
+    # Comment out this line if you need to test with real Ollama/LLM APIs
+    network_mode: "none"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Ollama service (commented out by default)
+  # Uncomment to enable real LLM responses
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: llmsec-ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   environment:
+  #     - OLLAMA_HOST=0.0.0.0
+
+# volumes:
+#   ollama_data:

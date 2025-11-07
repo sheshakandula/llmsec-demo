@@ -1,0 +1,1 @@
+SECRET_DEMO: top-secret content - should NOT be readable by defended flow
