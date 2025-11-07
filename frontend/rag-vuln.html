@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG (Vulnerable) - LLMSec Demo</title>
+    <!-- UPDATED BY CLAUDE: Link to shared CSS -->
+    <link rel="stylesheet" href="/static/common.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ LLMSec Demo</h1>
+        <p class="subtitle">Vulnerable vs. Defended LLM Integration Patterns</p>
+
+        <!-- UPDATED BY CLAUDE: Navigation bar -->
+        <nav class="navbar">
+            <a href="/">Home</a>
+            <a href="/static/chat-vuln.html">Chat (Vuln)</a>
+            <a href="/static/chat-defended.html">Chat (Defended)</a>
+            <a href="/static/rag-vuln.html" class="active">RAG (Vuln)</a>
+            <a href="/static/rag-defended.html">RAG (Defended)</a>
+            <a href="/static/learn.html">Learn</a>
+            <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+        </nav>
+
+        <!-- UPDATED BY CLAUDE: RAG Vulnerable Card -->
+        <div class="card">
+            <h2>⚠️ RAG (Vulnerable) - POST /rag/answer/vuln</h2>
+
+            <div class="label">Question:</div>
+            <textarea id="in" placeholder="What is the refund policy?" style="min-height: 80px;">What is the refund policy?</textarea>
+
+            <div class="label">Context Override (optional):</div>
+            <textarea id="contextOverride" placeholder="Leave empty or inject custom context..." style="min-height: 60px;"></textarea>
+
+            <button onclick="sendRequest()">Query Vulnerable RAG</button>
+
+            <div class="label" style="margin-top: 20px;">Raw Response JSON:</div>
+            <pre id="out" style="display: none;">Waiting for response...</pre>
+
+            <div class="label">Parsed Answer:</div>
+            <div id="answer" class="response" style="display: none;">N/A</div>
+
+            <div class="label">Sources:</div>
+            <pre id="tool" style="display: none;">N/A</pre>
+        </div>
+
+        <!-- UPDATED BY CLAUDE: Logs section -->
+        <div class="logs">
+            <h2 style="color: #4c6ef5; margin-bottom: 15px;">📊 Recent Logs</h2>
+            <button onclick="fetchLogs()">Refresh Logs</button>
+            <button onclick="clearLogs()">Clear Logs</button>
+            <pre id="logs" style="margin-top: 15px;">Loading logs...</pre>
+        </div>
+    </div>
+
+    <!-- UPDATED BY CLAUDE: Link to shared JavaScript -->
+    <script src="/static/common.js"></script>
+
+    <!-- UPDATED BY CLAUDE: Page-specific JavaScript -->
+    <script>
+        async function sendRequest() {
+            const question = document.getElementById('in').value;
+            const contextOverride = document.getElementById('contextOverride').value.trim();
+            const outElem = document.getElementById('out');
+            const answerElem = document.getElementById('answer');
+            const toolElem = document.getElementById('tool');
+
+            // Show loading state
+            outElem.textContent = 'Loading...';
+            outElem.style.display = 'block';
+            answerElem.textContent = 'Loading...';
+            answerElem.style.display = 'block';
+            toolElem.style.display = 'none';
+
+            try {
+                // UPDATED BY CLAUDE: Send with both 'question' and 'query' keys for compatibility
+                const payload = {
+                    question: question,
+                    query: question
+                };
+
+                // Add context_override only if provided
+                if (contextOverride) {
+                    payload.context_override = contextOverride;
+                }
+
+                const data = await safeFetch('/rag/answer/vuln', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Display raw JSON
+                outElem.textContent = JSON.stringify(data, null, 2);
+
+                // Display parsed answer
+                answerElem.textContent = data.answer || 'N/A';
+                if (data.warning) {
+                    answerElem.textContent += '\n\n⚠️ ' + data.warning;
+                }
+
+                // Display sources if present
+                if (data.sources && data.sources.length > 0) {
+                    toolElem.textContent = 'Sources:\n' + data.sources.join('\n');
+                    if (data.context_snippet) {
+                        toolElem.textContent += '\n\nContext Snippet:\n' + data.context_snippet;
+                    }
+                    toolElem.style.display = 'block';
+                } else {
+                    toolElem.style.display = 'none';
+                }
+
+                // Refresh logs
+                await fetchLogs();
+            } catch (err) {
+                outElem.textContent = `Error: ${err.message}`;
+                answerElem.textContent = `Error: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

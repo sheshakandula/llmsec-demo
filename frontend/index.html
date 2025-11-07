@@ -3,96 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLMSec Demo</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0f0f23;
-            color: #e0e0e0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { color: #00ff41; margin-bottom: 10px; }
-        .subtitle { color: #888; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .card {
-            background: #1a1a2e;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .card h2 { color: #ff6b6b; margin-bottom: 15px; font-size: 18px; }
-        .card.defended h2 { color: #51cf66; }
-        textarea {
-            width: 100%;
-            min-height: 100px;
-            background: #0f0f23;
-            color: #e0e0e0;
-            border: 1px solid #444;
-            border-radius: 4px;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            resize: vertical;
-        }
-        button {
-            background: #4c6ef5;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        button:hover { background: #364fc7; }
-        .response {
-            margin-top: 15px;
-            padding: 15px;
-            background: #0a0a15;
-            border-left: 3px solid #4c6ef5;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .warning { color: #ffa500; font-size: 12px; margin-top: 5px; }
-        .label { color: #888; font-size: 13px; margin-bottom: 5px; }
-        .logs { background: #1a1a2e; padding: 20px; border-radius: 8px; }
-        .log-entry {
-            padding: 8px;
-            margin: 5px 0;
-            background: #0f0f23;
-            border-left: 2px solid #666;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-        }
-        .examples {
-            background: #1a1a2e;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .examples h3 { color: #4c6ef5; margin-bottom: 10px; font-size: 16px; }
-        .examples code {
-            background: #0f0f23;
-            padding: 2px 6px;
-            border-radius: 3px;
-            color: #00ff41;
-            font-size: 12px;
-        }
-        .examples li { margin: 8px 0; font-size: 13px; }
-    </style>
+    <title>LLMSec Demo - Home</title>
+    <!-- UPDATED BY CLAUDE: Link to shared CSS -->
+    <link rel="stylesheet" href="/static/common.css">
 </head>
 <body>
     <div class="container">
         <h1>🛡️ LLMSec Demo</h1>
         <p class="subtitle">Vulnerable vs. Defended LLM Integration Patterns</p>
+
+        <!-- UPDATED BY CLAUDE: Navigation bar -->
+        <nav class="navbar">
+            <a href="/" class="active">Home</a>
+            <a href="/static/chat-vuln.html">Chat (Vuln)</a>
+            <a href="/static/chat-defended.html">Chat (Defended)</a>
+            <a href="/static/rag-vuln.html">RAG (Vuln)</a>
+            <a href="/static/rag-defended.html">RAG (Defended)</a>
+            <a href="/static/learn.html">Learn</a>
+            <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+        </nav>
 
         <div class="examples">
             <h3>💉 Try These Injection Examples:</h3>
@@ -104,194 +33,46 @@
             </ul>
         </div>
 
-        <div class="grid">
-            <!-- Vulnerable Chat -->
-            <div class="card">
-                <h2>⚠️ Chat (Vulnerable)</h2>
-                <div class="label">Message:</div>
-                <textarea id="chatVulnInput" placeholder="Enter your message...">What can you help me with?</textarea>
-                <button onclick="sendChatVuln()">Send to Vulnerable Endpoint</button>
-                <div id="chatVulnResponse" class="response" style="display:none;"></div>
-            </div>
+        <!-- UPDATED BY CLAUDE: Landing page grid with links to individual demo pages -->
+        <div class="landing-grid">
+            <a href="/static/chat-vuln.html" style="text-decoration: none;">
+                <div class="landing-card vuln">
+                    <h3>⚠️ Chat (Vulnerable)</h3>
+                    <p>Demonstrates prompt injection vulnerabilities with direct tool execution</p>
+                </div>
+            </a>
 
-            <!-- Defended Chat -->
-            <div class="card defended">
-                <h2>✅ Chat (Defended)</h2>
-                <div class="label">Message:</div>
-                <textarea id="chatDefInput" placeholder="Enter your message...">What can you help me with?</textarea>
-                <button onclick="sendChatDef()">Send to Defended Endpoint</button>
-                <div id="chatDefResponse" class="response" style="display:none;"></div>
-            </div>
+            <a href="/static/chat-defended.html" style="text-decoration: none;">
+                <div class="landing-card defended">
+                    <h3>✅ Chat (Defended)</h3>
+                    <p>Secure implementation with injection detection and policy enforcement</p>
+                </div>
+            </a>
 
-            <!-- Vulnerable RAG -->
-            <div class="card">
-                <h2>⚠️ RAG (Vulnerable)</h2>
-                <div class="label">Question:</div>
-                <textarea id="ragVulnInput" placeholder="Enter your question...">What is your refund policy?</textarea>
-                <div class="label">Context Override (optional):</div>
-                <textarea id="ragVulnContext" placeholder="Leave empty or inject custom context..." style="min-height: 60px;"></textarea>
-                <button onclick="sendRAGVuln()">Query Vulnerable RAG</button>
-                <div id="ragVulnResponse" class="response" style="display:none;"></div>
-            </div>
+            <a href="/static/rag-vuln.html" style="text-decoration: none;">
+                <div class="landing-card vuln">
+                    <h3>⚠️ RAG (Vulnerable)</h3>
+                    <p>Context poisoning and injection via poisoned documents</p>
+                </div>
+            </a>
 
-            <!-- Defended RAG -->
-            <div class="card defended">
-                <h2>✅ RAG (Defended)</h2>
-                <div class="label">Question:</div>
-                <textarea id="ragDefInput" placeholder="Enter your question...">What is your refund policy?</textarea>
-                <button onclick="sendRAGDef()">Query Defended RAG</button>
-                <div id="ragDefResponse" class="response" style="display:none;"></div>
-            </div>
+            <a href="/static/rag-defended.html" style="text-decoration: none;">
+                <div class="landing-card defended">
+                    <h3>✅ RAG (Defended)</h3>
+                    <p>Sanitized documents with content fencing and instruction stripping</p>
+                </div>
+            </a>
         </div>
 
         <div class="logs">
             <h2 style="color: #4c6ef5; margin-bottom: 15px;">📊 Recent Logs</h2>
-            <button onclick="loadLogs()">Refresh Logs</button>
+            <button onclick="fetchLogs()">Refresh Logs</button>
             <button onclick="clearLogs()">Clear Logs</button>
-            <div id="logsContainer" style="margin-top: 15px;"></div>
+            <pre id="logs" style="margin-top: 15px;">Loading logs...</pre>
         </div>
     </div>
 
-    <script>
-        // UPDATED BY CLAUDE: Global API base URL
-        const API_BASE = "http://localhost:8000";
-
-        // UPDATED BY CLAUDE: Safe fetch helper with error handling
-        async function safeFetch(url, options = {}) {
-            const res = await fetch(API_BASE + url, options);
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(`HTTP ${res.status}: ${text}`);
-            }
-            return await res.json();
-        }
-
-        async function sendChatVuln() {
-            const message = document.getElementById('chatVulnInput').value;
-            const responseDiv = document.getElementById('chatVulnResponse');
-            responseDiv.style.display = 'block';
-            responseDiv.textContent = 'Loading...';
-
-            try {
-                // UPDATED BY CLAUDE: Use safeFetch
-                const data = await safeFetch('/chat/vuln', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
-                });
-                responseDiv.textContent = `Response: ${data.response || 'N/A'}\n\n${data.warning || ''}`;
-                if (data.tool_result) {
-                    responseDiv.textContent += `\n\nTool Result:\n${JSON.stringify(data.tool_result, null, 2)}`;
-                }
-            } catch (err) {
-                responseDiv.textContent = `Error: ${err.message}`;
-            }
-        }
-
-        async function sendChatDef() {
-            const message = document.getElementById('chatDefInput').value;
-            const responseDiv = document.getElementById('chatDefResponse');
-            responseDiv.style.display = 'block';
-            responseDiv.textContent = 'Loading...';
-
-            try {
-                // UPDATED BY CLAUDE: Use safeFetch
-                const data = await safeFetch('/chat/defended', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
-                });
-                responseDiv.textContent = `Response: ${data.response || 'N/A'}`;
-                if (data.blocked) {
-                    responseDiv.textContent = `🚫 BLOCKED\n\nReason: ${data.message || 'Injection detected'}\nHits: ${JSON.stringify(data.hits || [])}`;
-                }
-                if (data.tool_result) {
-                    responseDiv.textContent += `\n\nTool Result:\n${JSON.stringify(data.tool_result, null, 2)}`;
-                }
-            } catch (err) {
-                responseDiv.textContent = `Error: ${err.message}`;
-            }
-        }
-
-        async function sendRAGVuln() {
-            const question = document.getElementById('ragVulnInput').value;
-            const context_override = document.getElementById('ragVulnContext').value || null;
-            const responseDiv = document.getElementById('ragVulnResponse');
-            responseDiv.style.display = 'block';
-            responseDiv.textContent = 'Loading...';
-
-            try {
-                // UPDATED BY CLAUDE: Use safeFetch
-                const data = await safeFetch('/rag/answer/vuln', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, context_override })
-                });
-                responseDiv.textContent = `Answer: ${data.answer || 'N/A'}\n\nSources: ${data.sources?.join(', ') || 'N/A'}\n\n${data.warning || ''}`;
-            } catch (err) {
-                responseDiv.textContent = `Error: ${err.message}`;
-            }
-        }
-
-        async function sendRAGDef() {
-            const question = document.getElementById('ragDefInput').value;
-            const responseDiv = document.getElementById('ragDefResponse');
-            responseDiv.style.display = 'block';
-            responseDiv.textContent = 'Loading...';
-
-            try {
-                // UPDATED BY CLAUDE: Use safeFetch
-                const data = await safeFetch('/rag/answer/defended', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question })
-                });
-                responseDiv.textContent = `Answer: ${data.answer || 'N/A'}\n\nSources: ${data.sources?.join(', ') || 'N/A'}`;
-            } catch (err) {
-                responseDiv.textContent = `Error: ${err.message}`;
-            }
-        }
-
-        async function loadLogs() {
-            const logsDiv = document.getElementById('logsContainer');
-            logsDiv.innerHTML = 'Loading...';
-
-            try {
-                // UPDATED BY CLAUDE: Use safeFetch and handle new API format
-                const data = await safeFetch('/logs/recent?n=20', {
-                    method: 'GET'
-                });
-
-                // UPDATED BY CLAUDE: API returns {"items": [...], "count": N}
-                const logs = data.items || [];
-
-                if (logs.length === 0) {
-                    logsDiv.innerHTML = '<p style="color: #888;">No logs yet</p>';
-                    return;
-                }
-
-                logsDiv.innerHTML = logs.reverse().map(log =>
-                    `<div class="log-entry">
-                        <strong>${log.timestamp || 'N/A'}</strong> [${log.endpoint || 'unknown'}] ${log.event_type || log.event || 'info'}: ${log.message || 'N/A'}
-                    </div>`
-                ).join('');
-            } catch (err) {
-                logsDiv.innerHTML = `Error loading logs: ${err.message}`;
-            }
-        }
-
-        async function clearLogs() {
-            try {
-                // UPDATED BY CLAUDE: Use safeFetch
-                await safeFetch('/logs/clear', { method: 'POST' });
-                loadLogs();
-            } catch (err) {
-                alert(`Error clearing logs: ${err.message}`);
-            }
-        }
-
-        // Load logs on page load
-        window.addEventListener('load', loadLogs);
-    </script>
+    <!-- UPDATED BY CLAUDE: Link to shared JavaScript -->
+    <script src="/static/common.js"></script>
 </body>
 </html>
