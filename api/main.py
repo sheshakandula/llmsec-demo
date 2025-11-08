@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 import logging
 import os
 
-from api.routes import chat, rag, debug
+from api.routes import chat, rag, debug, actions  # UPDATED BY CLAUDE
 
 logging.basicConfig(
     level=logging.INFO,
@@ -46,6 +46,7 @@ app.add_middleware(
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(rag.router, prefix="/rag", tags=["rag"])
 app.include_router(debug.router, prefix="/logs", tags=["debug"])
+app.include_router(actions.router, prefix="/actions", tags=["actions"])  # UPDATED BY CLAUDE
 
 
 @app.get("/health")
