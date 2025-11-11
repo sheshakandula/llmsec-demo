@@ -10,6 +10,7 @@ from api.clients.ollama import ollama_client
 from api.telemetry import log_event
 from api.security.filters import detect_injection, sanitize_text
 from api.rag.retrieve import retrieve, sanitize_document, fence_untrusted_content
+from api.utils.respond import build_response  # STANDARDIZATION
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -38,12 +39,15 @@ class RAGRequest(BaseModel):
 
 
 class RAGResponse(BaseModel):
-    """RAG answer response"""
-    answer: str
-    sources: List[str]
-    context_snippet: str
-    warning: Optional[str] = None
+    """RAG answer response - STANDARDIZATION: UI-friendly ordering"""
+    answer: str  # STANDARDIZATION: Position 1 (primary for RAG) - SHOWS FIRST in UI
+    response: str = ""  # STANDARDIZATION: Position 2 (backward compat)
+    tool_result: Optional[Dict[str, Any]] = None  # STANDARDIZATION: Position 3 (secondary details)
+    # Metadata fields (alphabetical):
+    context_snippet: str = ""
     metadata: Optional[Dict[str, Any]] = None
+    sources: List[str] = []
+    warning: Optional[str] = None
 
 
 @router.post("/answer/vuln", response_model=RAGResponse)
@@ -67,12 +71,15 @@ async def rag_vulnerable(request: RAGRequest) -> RAGResponse:
     docs = retrieve(question, k=k)
 
     if not docs:
-        return RAGResponse(
+        return RAGResponse(**build_response(
+            tool_result=None,
             answer="No documents found to answer your question.",
-            sources=[],
+            response="",
             context_snippet="N/A",
+            metadata=None,
+            sources=[],
             warning="⚠️ This endpoint is vulnerable to context injection"
-        )
+        ))
 
     # ⚠️ VULNERABLE: Direct concatenation of all retrieved content
     # No sanitization, no validation, no fencing
@@ -108,13 +115,15 @@ Answer:"""
         logger.error(f"Error generating answer: {e}")
         raise HTTPException(status_code=500, detail="Error generating answer")
 
-    return RAGResponse(
+    return RAGResponse(**build_response(
+        tool_result=None,
         answer=answer,
-        sources=sources,
+        response="",
         context_snippet=merged_context[:300] + "..." if len(merged_context) > 300 else merged_context,
-        warning="⚠️ This endpoint is vulnerable to context injection and poisoned data",
-        metadata={"doc_count": len(docs), "total_context_size": len(merged_context)}
-    )
+        metadata={"doc_count": len(docs), "total_context_size": len(merged_context)},
+        sources=sources,
+        warning="⚠️ This endpoint is vulnerable to context injection and poisoned data"
+    ))
 
 
 @router.post("/answer/defended", response_model=RAGResponse)
@@ -142,24 +151,29 @@ async def rag_defended(request: RAGRequest) -> RAGResponse:
     if injection_type:
         log_event("rag_defended", "warning",
                  f"Injection detected in question: {injection_type}")
-        return RAGResponse(
+        return RAGResponse(**build_response(
+            tool_result=None,
             answer="Your question contains patterns that suggest prompt manipulation. Please rephrase.",
-            sources=["safety_filter"],
+            response="",
             context_snippet="N/A",
-            warning=None,
-            metadata={"blocked": True, "reason": injection_type}
-        )
+            metadata={"blocked": True, "reason": injection_type},
+            sources=["safety_filter"],
+            warning=None
+        ))
 
     # Retrieve documents
     docs = retrieve(sanitized_question, k=k)
 
     if not docs:
-        return RAGResponse(
+        return RAGResponse(**build_response(
+            tool_result=None,
             answer="No documents found to answer your question.",
-            sources=[],
+            response="",
             context_snippet="N/A",
+            metadata=None,
+            sources=[],
             warning=None
-        )
+        ))
 
     # ✅ DEFENDED: Sanitize each document and fence with <UNTRUSTED> tags
     fenced_parts = []
@@ -214,15 +228,17 @@ Provide a factual answer based ONLY on the context above:"""
         logger.error(f"Error generating answer: {e}")
         raise HTTPException(status_code=500, detail="Error generating answer")
 
-    return RAGResponse(
+    return RAGResponse(**build_response(
+        tool_result=None,
         answer=answer,
-        sources=sources,
+        response="",
         context_snippet=combined_context[:300] + "..." if len(combined_context) > 300 else combined_context,
-        warning=None,
         metadata={
             "doc_count": len(docs),
             "stripped_lines": stripped_lines_count,
             "sanitized": True,
             "fenced": True
-        }
-    )
+        },
+        sources=sources,
+        warning=None
+    ))

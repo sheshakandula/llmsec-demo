@@ -22,6 +22,7 @@ from api.security.output_guard import (
     extract_all_run_directives
 )
 from api.telemetry import log_event
+from api.utils.respond import build_response  # STANDARDIZATION
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -40,16 +41,20 @@ class ActionRequest(BaseModel):
 
 
 class ActionResponse(BaseModel):
-    """Response from action execution"""
-    status: str
+    """Response from action execution - STANDARDIZATION: UI-friendly ordering"""
+    answer: str = ""  # STANDARDIZATION: Position 1 - SHOWS FIRST in UI
+    response: str = ""  # STANDARDIZATION: Position 2 - SHOWS FIRST in UI
+    tool_result: Optional[Dict[str, Any]] = None  # STANDARDIZATION: Position 3 (alias for execution_result)
+    # Metadata fields (alphabetical):
     action: Optional[str] = None
-    result: Optional[str] = None
-    execution_result: Optional[Dict[str, Any]] = None
-    warning: Optional[str] = None
     blocked: Optional[bool] = None
-    reason: Optional[str] = None
+    execution_result: Optional[Dict[str, Any]] = None  # Legacy field (use tool_result)
     message: Optional[str] = None
     parsed_directive: Optional[Dict[str, Any]] = None
+    reason: Optional[str] = None
+    result: Optional[str] = None
+    status: str
+    warning: Optional[str] = None
 
 
 @router.post("/run/vuln", response_model=ActionResponse)
@@ -80,11 +85,16 @@ async def run_action_vuln(request: ActionRequest):
 
     if not directive:
         log_event("actions_vuln", "no_directive", "No RUN directive found in output")
-        return ActionResponse(
-            status="no_action",
+        return ActionResponse(**build_response(
+            tool_result=None,
+            answer="",
+            response="",
+            action=None,
+            execution_result=None,
             message="No RUN: directive found in LLM output",
+            status="no_action",
             warning="⚠️ This endpoint is vulnerable to improper output handling"
-        )
+        ))
 
     action = directive["action"]
     payload = directive["payload"]
@@ -94,14 +104,17 @@ async def run_action_vuln(request: ActionRequest):
     # ⚠️ VULNERABLE: Execute without any validation or confirmation
     result = ActionRunner.execute_vuln(action, payload)
 
-    return ActionResponse(
-        status="executed",
+    return ActionResponse(**build_response(
+        tool_result=result,
+        answer="",
+        response="",
         action=action,
-        result=result.get("result"),
         execution_result=result,
-        warning="⚠️ Action executed without validation - vulnerable to LLM manipulation",
-        parsed_directive=directive
-    )
+        parsed_directive=directive,
+        result=result.get("result"),
+        status="executed",
+        warning="⚠️ Action executed without validation - vulnerable to LLM manipulation"
+    ))
 
 
 @router.post("/run/defended", response_model=ActionResponse)
@@ -135,10 +148,13 @@ async def run_action_defended(request: ActionRequest):
 
     if not directive:
         log_event("actions_defended", "no_directive", "No RUN directive found in output")
-        return ActionResponse(
-            status="no_action",
-            message="No RUN: directive found in LLM output"
-        )
+        return ActionResponse(**build_response(
+            tool_result=None,
+            answer="",
+            response="",
+            message="No RUN: directive found in LLM output",
+            status="no_action"
+        ))
 
     raw_action = directive["action"]
     payload = directive["payload"]
@@ -153,14 +169,19 @@ async def run_action_defended(request: ActionRequest):
     is_valid, error_msg = validate_payload(action, payload)
     if not is_valid:
         log_event("actions_defended", "blocked", f"Invalid payload: {error_msg}")
-        return ActionResponse(
-            status="blocked",
-            blocked=True,
+        return ActionResponse(**build_response(
+            tool_result=None,
+            answer="",
+            response="",
             action=action,
-            reason="invalid_payload",
+            blocked=True,
+            execution_result=None,
             message=f"Payload validation failed: {error_msg}",
-            parsed_directive=directive
-        )
+            parsed_directive=directive,
+            reason="invalid_payload",
+            status="blocked",
+            warning=None
+        ))
 
     log_event("actions_defended", "validated", f"✅ Action {action} passed validation")
 
@@ -169,35 +190,47 @@ async def run_action_defended(request: ActionRequest):
 
     # Check if execution was blocked or pending
     if result["status"] == "blocked":
-        return ActionResponse(
-            status="blocked",
+        return ActionResponse(**build_response(
+            tool_result=result,
+            answer="",
+            response="",
+            action=action,
             blocked=True,
-            action=action,
-            reason=result.get("reason"),
-            message=result.get("message"),
             execution_result=result,
-            parsed_directive=directive
-        )
+            message=result.get("message"),
+            parsed_directive=directive,
+            reason=result.get("reason"),
+            status="blocked",
+            warning=None
+        ))
     elif result["status"] == "pending_confirmation":
-        return ActionResponse(
-            status="pending_confirmation",
+        return ActionResponse(**build_response(
+            tool_result=result,
+            answer="",
+            response="",
             action=action,
-            reason=result.get("reason"),
-            message=result.get("message"),
             execution_result=result,
-            parsed_directive=directive
-        )
+            message=result.get("message"),
+            parsed_directive=directive,
+            reason=result.get("reason"),
+            status="pending_confirmation",
+            warning=None
+        ))
 
     # Successfully executed
     log_event("actions_defended", "executed", f"✅ Action {action} executed successfully")
 
-    return ActionResponse(
-        status="executed",
+    return ActionResponse(**build_response(
+        tool_result=result,
+        answer="",
+        response="",
         action=action,
-        result=result.get("result"),
         execution_result=result,
-        parsed_directive=directive
-    )
+        parsed_directive=directive,
+        result=result.get("result"),
+        status="executed",
+        warning=None
+    ))
 
 
 @router.get("/info")
