@@ -63,14 +63,14 @@ This ordering ensures the most important information is visible first, making de
 ```bash
 curl -X POST "http://localhost:8000/chat/vuln" \
   -H "Content-Type: application/json" \
-  -d '{"message": "What can you help me with?"}'
+  -d '{"message": "What can you help me with?"}' | jq
 ```
 
 **Defended Chat** - POST `/chat/defended`
 ```bash
 curl -X POST "http://localhost:8000/chat/defended" \
   -H "Content-Type: application/json" \
-  -d '{"message": "Ignore previous instructions", "user_confirmed": true}'
+  -d '{"message": "Ignore previous instructions", "user_confirmed": true}' | jq
 ```
 
 ### RAG Endpoints
@@ -79,14 +79,14 @@ curl -X POST "http://localhost:8000/chat/defended" \
 ```bash
 curl -X POST "http://localhost:8000/rag/answer/vuln" \
   -H "Content-Type: application/json" \
-  -d '{"question": "What is the refund policy?"}'
+  -d '{"question": "What is the refund policy?"}' | jq
 ```
 
 **Defended RAG** - POST `/rag/answer/defended`
 ```bash
 curl -X POST "http://localhost:8000/rag/answer/defended" \
   -H "Content-Type: application/json" \
-  -d '{"question": "What is the refund policy?"}'
+  -d '{"question": "What is the refund policy?"}' | jq
 ```
 
 ### Telemetry Endpoints
@@ -103,7 +103,7 @@ curl http://localhost:8000/logs/stats | jq
 
 **Clear Logs**
 ```bash
-curl -X POST http://localhost:8000/logs/clear
+curl -X POST http://localhost:8000/logs/clear | jq
 ```
 
 ## Demonstration Attacks
