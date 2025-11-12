@@ -460,14 +460,18 @@ curl -s -X POST http://localhost:8000/chat/defended \
 
 ```json
 {
-  "status": "executed|blocked|pending_confirmation",
+  "answer": "",
+  "response": "",
+  "tool_result": {/* Tool execution details */},
   "action": "action_name",
-  "result": "Action execution result",
-  "execution_result": {/* Full execution details */},
   "blocked": true,
-  "reason": "invalid_payload|action_not_allowed",
+  "execution_result": {/* Full execution details */},
   "message": "Detailed message",
-  "parsed_directive": {/* Parsed RUN: directive */}
+  "parsed_directive": {/* Parsed RUN: directive */},
+  "reason": "invalid_payload|action_not_allowed",
+  "result": "Action execution result",
+  "status": "executed|blocked|pending_confirmation",
+  "warning": "..."
 }
 ```
 

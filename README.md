@@ -116,6 +116,39 @@ ollama serve
 uvicorn api.main:app --reload --port 8000
 ```
 
+## Response Format
+
+All API endpoints return JSON responses with **standardized field ordering** for clarity during presentations:
+
+1. **`answer`** - Primary answer text (RAG endpoints) - Shows first in responses
+2. **`response`** - Primary response text (Chat endpoints) - Shows first in responses
+3. **`tool_result`** - Tool execution details (if any) - Secondary information
+4. **Metadata fields** - Additional context in alphabetical order (status, blocked, warning, etc.)
+
+### Example Response Structure
+
+```json
+{
+  "answer": "The refund policy allows...",
+  "response": "The refund policy allows...",
+  "tool_result": {
+    "success": true,
+    "file_path": "data/docs/faq.md"
+  },
+  "sources": ["faq.md"],
+  "warning": "⚠️ This endpoint is vulnerable..."
+}
+```
+
+### UI Display Order
+
+The browser interface displays results in an audience-friendly format:
+1. **Parsed Answer** - Easy-to-read primary content (shown first)
+2. **Tool Result** - Execution details or sources (shown second)
+3. **Raw Response JSON** - Complete technical details (shown last)
+
+This ordering ensures audiences see the most important information first during live demos.
+
 ## Demo Curl Playlist
 
 ### 1. Health Check

@@ -35,6 +35,26 @@ docker-compose up --build
 - **RAG (Vulnerable)**: http://localhost:8000/static/rag-vuln.html
 - **RAG (Defended)**: http://localhost:8000/static/rag-defended.html
 
+### UI Response Display
+
+The browser interface shows responses in an **audience-friendly order** for live demonstrations:
+
+1. **Parsed Answer** (First) - Clean, easy-to-read primary content
+   - Displays the `answer` or `response` field
+   - Includes any warnings or security messages
+
+2. **Tool Result** (Second) - Execution details or metadata
+   - Shows `tool_result` content if present
+   - Displays sources for RAG endpoints
+   - Shows execution status for action endpoints
+
+3. **Raw Response JSON** (Last) - Complete technical details
+   - Full JSON response with all fields
+   - Useful for technical deep-dives
+   - Shows the standardized field ordering
+
+This ordering ensures the most important information is visible first, making demos more consumable for non-technical audiences.
+
 ## API Endpoints Recap
 
 ### Chat Endpoints
@@ -395,6 +415,7 @@ llmsec/
 5. **Validate at every layer** - Input validation, policy checks, output sanitization
 6. **Fence instructions** - Use delimiters and explicit boundaries for system vs. user content
 7. **Audit everything** - Log all tool executions and security events for forensics
+8. **Standardize response formats** - Consistent field ordering improves debugging and presentation clarity
 
 ---
 
